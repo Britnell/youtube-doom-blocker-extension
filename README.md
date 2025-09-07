@@ -6,7 +6,7 @@ my lil browser extension to block youtube feed of video suggestions on home page
 
 Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium enim a eos itaque nobis? Aut ratione esse earum ut eum iusto ab doloremque rerum repellat! Pariatur commodi debitis quis animi!
 
-### Resources
+### publishing extensions
 
 Publishing :
 https://developer.chrome.com/docs/webstore/prepare

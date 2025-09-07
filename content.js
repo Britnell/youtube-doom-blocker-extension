@@ -44,7 +44,7 @@ function createMessageElement() {
 
   const parent = document.querySelector('ytd-page-manager');
   if (parent) {
-    parent?.appendChild(messageElement);
+    parent?.appendChild(msg);
     messageElement = msg;
   }
 }
