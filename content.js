@@ -4,6 +4,8 @@ const config = {
 
 immediately();
 window.addEventListener('load', doomStart);
+// document.addEventListener('yt-navigate-start', () => {});
+// document.addEventListener('yt-navigate-finish', ()=>{});
 
 async function immediately() {
   //  hide immediately to avoid flash
@@ -31,6 +33,17 @@ async function doomStart() {
     elementHandler(el);
   });
 }
+
+const blockedPage = () => {
+  const path = window.location.pathname;
+  if (path === '/') {
+    return true;
+  }
+  if (path.startsWith('/shorts')) {
+    return config.hideShorts;
+  }
+  return false;
+};
 
 function elementHandler(el) {
   if (!el) return;
@@ -115,3 +128,14 @@ function onplay(ev) {
   ev.target?.pause();
   ev.target?.removeEventListener('play', onplay);
 }
+
+// function msgElement() {
+//   const exists = document.getElementById('doom-blocker');
+//   if (exists) return exists;
+
+//   const msg = document.createElement('div');
+//   msg.id = 'doom-blocker';
+//   msg.style = 'position: absolute; top: 40vh; left: 50vw; z-index: 1;';
+//   msg.innerHTML = `<p style="font-size: 5rem; color: #fff; text-align: center;">you're welcome</p>`;
+//   return msg;
+// }
