@@ -56,11 +56,13 @@ function elementHandler(el) {
 function hideShort(el) {
   el.style.display = config.hideShorts ? 'none' : 'block';
   if (config.hideShorts) {
-    document.querySelectorAll('video').forEach((el) => {
-      el.pause();
-      el.removeEventListener('play', onplay);
-      el.addEventListener('play', onplay);
-    });
+    setTimeout(() => {
+      document.querySelectorAll('video').forEach((el) => {
+        el.pause();
+        el.removeEventListener('play', onplay);
+        el.addEventListener('play', onplay);
+      });
+    }, 10);
   }
 }
 function observerer(el, config, callback) {
