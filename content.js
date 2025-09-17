@@ -1,39 +1,76 @@
-window.addEventListener('load', feedblocker);
-document.addEventListener('yt-navigate-start', feedblocker);
-document.addEventListener('yt-navigate-finish', feedblocker);
-
-let messageElement;
-let config = {
+const config = {
   hideShorts: true,
 };
-const shortsKey = 'hideShorts';
-doomStart();
 
-function doomStart() {
-  //  storage sync
-  chrome.storage.sync.get((res) => {
-    config.hideShorts = res.hideShorts ?? true;
-  });
+immediately();
+window.addEventListener('load', doomStart);
 
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.hideShorts) {
-      const hide = changes.hideShorts.newValue;
-      config.hideShorts = hide;
-    }
+async function immediately() {
+  await initConfig();
+  //  immediately hide shorts
+  document.querySelectorAll('ytd-shorts').forEach((el) => {
+    hideShort(el);
   });
 }
 
-function feedblocker() {
-  createMessageElement();
+async function doomStart() {
+  await initConfig();
 
-  hideHomeFeed();
-  hideShorts();
-  hideSidebarSuggestions();
+  const mgr = document.querySelector('ytd-page-manager');
 
-  if (messageElement) {
-    const block = isBlockedpage();
-    messageElement.style.display = block ? 'block' : 'none';
+  // run immediately
+  for (let i = 0; i < mgr.children.length; i++) {
+    elementHandler(mgr.children[i]);
   }
+
+  // run on updates
+  observerer(mgr, { childList: true, subtree: false }, (muts) => {
+    const el = muts[0]?.addedNodes[0];
+    elementHandler(el);
+  });
+}
+
+function elementHandler(el) {
+  if (!el) return;
+  const type = el.getAttribute('page-subtype');
+  const tag = el.tagName.toLowerCase();
+
+  if (tag === 'ytd-browse') {
+    if (type === 'home') {
+      el.style.display = 'none';
+    }
+  }
+  if (tag === 'ytd-shorts') {
+    hideShort(el);
+
+    observerer(el, { attributes: true, attributeFilter: ['hidden'] }, (muts) => {
+      const mut = muts?.[0];
+      if (!mut) return;
+      if (mut.attributeName === 'hidden') {
+        hideShort(el);
+      }
+    });
+  }
+}
+
+function hideShort(el) {
+  el.style.display = config.hideShorts ? 'none' : 'block';
+  if (config.hideShorts) {
+    document.querySelectorAll('video').forEach((el) => {
+      el.pause();
+      el.removeEventListener('play', onplay);
+      el.addEventListener('play', onplay);
+    });
+  }
+}
+function observerer(el, config, callback) {
+  if (!el) return null;
+
+  const observer = new MutationObserver((mutations) => {
+    callback(mutations);
+  });
+
+  observer.observe(el, config);
 }
 
 function hideSidebarSuggestions() {
@@ -44,43 +81,6 @@ function hideSidebarSuggestions() {
     el.style.display = isVideoPage ? 'none' : 'block';
   }
 }
-
-function hideShorts() {
-  if (!config.hideShorts) return;
-  const isShort = window.location.pathname.startsWith('/shorts');
-
-  const el = document.querySelector('ytd-shorts');
-
-  const hide = config.hideShorts && isShort;
-  if (el) {
-    el.style.display = hide ? 'none' : 'block';
-  }
-  if (hide) {
-    document.querySelectorAll('video').forEach((el) => {
-      el.pause();
-    });
-  }
-}
-
-function hideHomeFeed() {
-  const block = window.location.pathname === '/';
-  const grid = document.querySelector('ytd-browse');
-  if (grid) {
-    // grid.innerHTML = '';
-    grid.style.display = block ? 'none' : 'block';
-  }
-  const preview = document.querySelector('ytd-video-preview');
-  if (preview) {
-    preview.style.display = block ? 'none' : 'block';
-  }
-}
-
-function isBlockedpage() {
-  const ishome = window.location.pathname === '/';
-  const isShort = window.location.pathname.startsWith('/shorts');
-  return ishome || (config.hideShorts && isShort);
-}
-
 function createMessageElement() {
   if (messageElement) return;
 
@@ -96,4 +96,27 @@ function createMessageElement() {
     parent?.appendChild(msg);
     messageElement = msg;
   }
+}
+
+function initConfig() {
+  const shortsKey = 'hideShorts';
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes[shortsKey]) {
+      const hide = changes[shortsKey].newValue;
+      config[shortsKey] = hide;
+    }
+  });
+
+  return new Promise((resolve) => {
+    //  storage sync
+    chrome.storage.sync.get((res) => {
+      config.hideShorts = res.hideShorts ?? true;
+      resolve();
+    });
+  });
+}
+
+function onplay(ev) {
+  ev.target?.pause();
 }
