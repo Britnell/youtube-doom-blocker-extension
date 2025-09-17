@@ -6,10 +6,12 @@ immediately();
 window.addEventListener('load', doomStart);
 
 async function immediately() {
-  await initConfig();
-  //  immediately hide shorts
+  //  hide immediately to avoid flash
   document.querySelectorAll('ytd-shorts').forEach((el) => {
     hideShort(el);
+  });
+  document.querySelectorAll('ytd-watch-flexy').forEach((el) => {
+    hideSidebar(el);
   });
 }
 
@@ -51,20 +53,35 @@ function elementHandler(el) {
       }
     });
   }
+
+  if (tag === 'ytd-watch-flexy') {
+    hideSidebar(el);
+  }
 }
 
 function hideShort(el) {
   el.style.display = config.hideShorts ? 'none' : 'block';
+
   if (config.hideShorts) {
+    document.querySelectorAll('video').forEach((el) => {
+      el?.pause();
+    });
     setTimeout(() => {
       document.querySelectorAll('video').forEach((el) => {
-        el.pause();
-        el.removeEventListener('play', onplay);
+        el?.pause();
         el.addEventListener('play', onplay);
       });
     }, 10);
   }
 }
+
+function hideSidebar(el) {
+  const sidebar = el.querySelector('ytd-watch-next-secondary-results-renderer');
+  if (sidebar) {
+    sidebar.style.display = 'none';
+  }
+}
+
 function observerer(el, config, callback) {
   if (!el) return null;
 
@@ -73,31 +90,6 @@ function observerer(el, config, callback) {
   });
 
   observer.observe(el, config);
-}
-
-function hideSidebarSuggestions() {
-  const isVideoPage = window.location.pathname.startsWith('/watch');
-
-  const el = document.querySelector('ytd-watch-next-secondary-results-renderer');
-  if (el) {
-    el.style.display = isVideoPage ? 'none' : 'block';
-  }
-}
-function createMessageElement() {
-  if (messageElement) return;
-
-  const msg = document.createElement('div');
-  msg.innerHTML = `<div style="height:75vh; display:grid; place-items:center;">
-  <h1 style="color:white; font-size: 5vw; text-align:center;">This is your detox (light)</h1>
-  </div>`;
-  msg.style.display = 'none';
-  msg.style.width = '100%';
-
-  const parent = document.querySelector('ytd-page-manager');
-  if (parent) {
-    parent?.appendChild(msg);
-    messageElement = msg;
-  }
 }
 
 function initConfig() {
@@ -113,7 +105,7 @@ function initConfig() {
   return new Promise((resolve) => {
     //  storage sync
     chrome.storage.sync.get((res) => {
-      config.hideShorts = res.hideShorts ?? true;
+      config.hideShorts = res?.hideShorts ?? true;
       resolve();
     });
   });
@@ -121,4 +113,5 @@ function initConfig() {
 
 function onplay(ev) {
   ev.target?.pause();
+  ev.target?.removeEventListener('play', onplay);
 }
