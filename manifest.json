@@ -3,7 +3,7 @@
   "name": "YouTube Doom Blocker",
   "version": "1.0",
   "description": "YouTube extension that blocks the algorithmic suggestions on your youtube home page. You're velcome",
-  "permissions": ["scripting"],
+  "permissions": ["scripting", "storage"],
   "host_permissions": ["https://*.youtube.com/*"],
   "content_scripts": [
     {
@@ -23,6 +23,7 @@
       "32": "assets/favicon-32x32.png",
       "48": "assets/favicon-48x48.png"
     },
-    "default_title": "YouTube Doom Blocker"
+    "default_title": "YouTube Doom Blocker",
+    "default_popup": "popup.html"
   }
 }

@@ -1,17 +1,39 @@
 window.addEventListener('load', feedblocker);
-// document.addEventListener('yt-navigate-start', feedblocker);
+document.addEventListener('yt-navigate-start', feedblocker);
 document.addEventListener('yt-navigate-finish', feedblocker);
 
 let messageElement;
+let config = {
+  hideShorts: true,
+};
+const shortsKey = 'hideShorts';
+doomStart();
+
+function doomStart() {
+  //  storage sync
+  chrome.storage.sync.get((res) => {
+    config.hideShorts = res.hideShorts ?? true;
+  });
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.hideShorts) {
+      const hide = changes.hideShorts.newValue;
+      config.hideShorts = hide;
+    }
+  });
+}
 
 function feedblocker() {
   createMessageElement();
 
   hideHomeFeed();
-
+  hideShorts();
   hideSidebarSuggestions();
 
-  hideShorts();
+  if (messageElement) {
+    const block = isBlockedpage();
+    messageElement.style.display = block ? 'block' : 'none';
+  }
 }
 
 function hideSidebarSuggestions() {
@@ -24,29 +46,39 @@ function hideSidebarSuggestions() {
 }
 
 function hideShorts() {
+  if (!config.hideShorts) return;
   const isShort = window.location.pathname.startsWith('/shorts');
+
   const el = document.querySelector('ytd-shorts');
+
+  const hide = config.hideShorts && isShort;
   if (el) {
-    el.innerHTML = '';
-    // el.style.display = isShort ? 'none' : 'block';
+    el.style.display = hide ? 'none' : 'block';
+  }
+  if (hide) {
+    document.querySelectorAll('video').forEach((el) => {
+      el.pause();
+    });
   }
 }
 
 function hideHomeFeed() {
-  const block = isBlockedpage();
+  const block = window.location.pathname === '/';
   const grid = document.querySelector('ytd-browse');
   if (grid) {
+    // grid.innerHTML = '';
     grid.style.display = block ? 'none' : 'block';
   }
   const preview = document.querySelector('ytd-video-preview');
   if (preview) {
     preview.style.display = block ? 'none' : 'block';
   }
-  messageElement.style.display = block ? 'block' : 'none';
 }
 
 function isBlockedpage() {
-  return window.location.pathname === '/';
+  const ishome = window.location.pathname === '/';
+  const isShort = window.location.pathname.startsWith('/shorts');
+  return ishome || (config.hideShorts && isShort);
 }
 
 function createMessageElement() {
