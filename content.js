@@ -3,6 +3,7 @@ const config = {
 };
 
 immediately();
+
 window.addEventListener('load', doomStart);
 // document.addEventListener('yt-navigate-start', () => {});
 // document.addEventListener('yt-navigate-finish', ()=>{});
@@ -106,12 +107,10 @@ function observerer(el, config, callback) {
 }
 
 function initConfig() {
-  const shortsKey = 'hideShorts';
-
   chrome.storage.onChanged.addListener((changes) => {
-    if (changes[shortsKey]) {
-      const hide = changes[shortsKey].newValue;
-      config[shortsKey] = hide;
+    if (changes.hideShorts) {
+      const hide = changes.hideShorts.newValue;
+      config.hideShorts = hide;
     }
   });
 
