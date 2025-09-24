@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Feed Blocker",
   "version": "0.1.0",
-  "description": "YouTube extension that blocks the algorithmic suggestions on your youtube home page feed. You're velcome",
+  "description": "YouTube extension that blocks the algorithmic suggestions on your youtube feed.",
   "permissions": ["scripting", "storage"],
   "host_permissions": ["https://*.youtube.com/*"],
   "content_scripts": [
