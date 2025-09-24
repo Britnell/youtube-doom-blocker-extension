@@ -22,6 +22,9 @@ async function doomStart() {
   await initConfig();
 
   const mgr = document.querySelector('ytd-page-manager');
+  if (!mgr) {
+    setTimeout(() => doomStart, 500);
+  }
 
   // run immediately
   for (let i = 0; i < mgr.children.length; i++) {
