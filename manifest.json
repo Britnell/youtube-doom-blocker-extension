@@ -25,5 +25,10 @@
     },
     "default_title": "YouTube Doom Blocker",
     "default_popup": "popup.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "youtube-doom-blocker@example.com"
+    }
   }
 }

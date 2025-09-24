@@ -117,6 +117,13 @@ function initConfig() {
   return new Promise((resolve) => {
     //  storage sync
     chrome.storage.sync.get((res) => {
+      if (chrome.runtime.lastError) {
+        console.error('Storage error:', chrome.runtime.lastError);
+        config.hideShorts = true;
+        resolve();
+        return;
+      }
+
       config.hideShorts = res?.hideShorts ?? true;
       resolve();
     });
